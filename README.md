@@ -15,7 +15,7 @@ Third, set directories of skeleton detecting json file and frame images on infer
 
 Lastly, run inference.py then you will get log file and result images
 
-# Reference
+# References
 https://github.com/CMU-Perceptual-Computing-Lab/openpose
 
 https://github.com/svip-lab/GazeFollowing
