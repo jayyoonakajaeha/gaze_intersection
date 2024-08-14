@@ -11,14 +11,37 @@ def bound(input_file,frame_width,frame_height):
     # 눈 좌표 가져오기 및 정규화
     for person in data['people']:
         # 좌표 가져오기
-        # 1번과 2번 keypoints가 각각 왼쪽 눈과 오른쪽 눈의 x, y 좌표임
+        # 1번 목 15 16 양눈
         keypoints = person['pose_keypoints_2d']
-        max_y = keypoints[3*1+1]
-        min_y = keypoints[3*15+1]
-        if keypoints[3*16+1]>max_y:
-            max_y = keypoints[3*16+1]
-        min_y-=80
-        
+
+        lear_y = keypoints[3*18+1]
+        rear_y = keypoints[3*17+1]
+        leye_y = keypoints[3*16+1]
+        reye_y = keypoints[3*15+1]
+        nose_y = keypoints[1]
+        neck_y = keypoints[3*1+1]
+
+        max_y = 0
+        min_y = frame_height
+
+        if neck_y>max_y: max_y = neck_y
+        if nose_y>max_y: max_y = nose_y
+        if rear_y>max_y: max_y = rear_y
+        if lear_y>max_y: max_y = lear_y
+        if leye_y>max_y: max_y = leye_y
+        if reye_y>max_y: max_y = reye_y
+
+
+        if lear_y!=0 and min_y>lear_y: min_y = lear_y 
+        if rear_y!=0 and min_y>rear_y: min_y = rear_y
+        if leye_y!=0 and min_y>leye_y: min_y = leye_y
+        if reye_y!=0 and min_y>reye_y: min_y = reye_y
+        if nose_y!=0 and min_y>nose_y: min_y = nose_y
+        if neck_y!=0 and min_y>neck_y: min_y = neck_y 
+
+        if min_y==frame_height: min_y=0
+        if min_y!=0: min_y-=80
+
         xs=[]
 
         left_shoulder = keypoints[3*5]
@@ -28,6 +51,31 @@ def bound(input_file,frame_width,frame_height):
         right_ear = keypoints[3*17]
         left_eye = keypoints[3*16]
         right_eye = keypoints[3*15]
+        
+        
+
+        min_x = frame_width
+        max_x = 0
+
+        if left_shoulder!=0 and min_x>left_shoulder: min_x = left_shoulder 
+        if right_shoulder!=0 and min_x>right_shoulder: min_x = right_shoulder
+        if nose!=0 and min_x>nose: min_x=nose
+        if left_ear!=0 and min_x>left_ear: min_x=left_ear
+        if right_ear!=0 and min_x>right_ear: min_x = right_ear
+        if left_eye!=0 and min_x>left_eye: min_x = left_eye 
+        if right_eye!=0 and min_x>right_eye: min_x = right_eye
+
+        if left_shoulder!=0 and max_x<left_shoulder: max_x = left_shoulder 
+        if right_shoulder!=0 and max_x<right_shoulder: max_x = right_shoulder
+        if nose!=0 and max_x<nose: max_x=nose
+        if left_ear!=0 and max_x<left_ear: max_x=left_ear
+        if right_ear!=0 and max_x<right_ear: max_x = right_ear
+        if left_eye!=0 and max_x<left_eye: max_x = left_eye 
+        if right_eye!=0 and max_x<right_eye: max_x = right_eye 
+
+        if min_x==frame_width: min_x=0
+
+        '''
         if left_shoulder!=0: xs.append(left_shoulder)
         if right_shoulder!=0: xs.append(right_shoulder)
         if nose!=0: xs.append(nose)
@@ -38,6 +86,14 @@ def bound(input_file,frame_width,frame_height):
         
         min_x = min(xs)
         max_x = max(xs)
+        '''
+        if min_x!=0:
+            if min_x==left_shoulder or min_x==right_shoulder:
+                min_x+=20
+        if max_x!=0:
+            if max_x==left_shoulder or max_x==right_shoulder:
+                max_x-=20
+        if max_y!=0 and max_y==neck_y: max_y-=30
 
         # 좌표 정규화
         normalized_min_x = min_x / frame_width
@@ -53,7 +109,10 @@ def bound(input_file,frame_width,frame_height):
             'max_x': normalized_max_x
         })
 
-    # 결과를 새로운 JSON 파일로 저장
+    
+    bounding.sort(key=lambda x: x['min_x'])
+
+
     return bounding
 
 # 사용 예시
